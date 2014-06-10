@@ -6,6 +6,7 @@ class Bootstrapper
 	private $bootstrapLocation = '';
 	private $isMultisite = false;
 	private $adminPassword = '';
+	private $alwaysReinstall = false;
 
 	private $settings;
 
@@ -207,7 +208,7 @@ class Bootstrapper
 
 		$hash = get_option('db_version') . ' ' . (int) $multisite . ' ' . sha1(json_encode($this->settings));
 
-		if (!$alwaysReinstall && $installed && file_exists(WP_TESTS_VERSION_FILE) && file_get_contents(WP_TESTS_VERSION_FILE) == $hash)
+		if (!$this->alwaysReinstall && $installed && file_exists(WP_TESTS_VERSION_FILE) && file_get_contents(WP_TESTS_VERSION_FILE) == $hash)
 			return;
 
 		$wpdb->query('SET storage_engine = INNODB');
