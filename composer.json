@@ -6,5 +6,9 @@
 		"classmap": [
 			"src/"
 		]
+	},
+
+	"suggest": {
+		"johnpbloch/wordpress": "Good WordPress copy to work off of.  This library is preconfigured to work with this package."
 	}
 }
