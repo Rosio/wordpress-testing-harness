@@ -2,6 +2,10 @@
 	"name": "rosio/wordpress-testing-harness",
 	"description": "Makes testing plugins and themes with WordPress and Composer much easier",
 
+	"require": {
+		"phpunit/phpunit": "*"
+	},
+
 	"autoload": {
 		"classmap": [
 			"src/"
