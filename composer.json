@@ -9,6 +9,7 @@
 	},
 
 	"suggest": {
-		"johnpbloch/wordpress": "Good WordPress copy to work off of.  This library is preconfigured to work with this package."
+		"johnpbloch/wordpress": "Good WordPress copy to work off of.  This library is preconfigured to work with this package.",
+		"mockery/mockery": "Simplifies the mocking of objects"
 	}
 }
