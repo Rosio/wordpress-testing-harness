@@ -48,29 +48,36 @@ Usage:
 
 3. Configure your phpunit's tests/bootstrap.php file:
 	```php
-	new Rosio\WordPressTestingHarness\Bootstrapper(array(
-		'bootstrap-path' => __FILE__,
+	<?php
 
-		'db-name' => 'wp_test',
-		'db-user' => 'root',
-		'db-pass' => '',
-		'db-host' => 'localhost',
-		'db-prefix' => 'wptests_',
-		'db-charset' => '',
-		'db-collate' => '',
-		'wplang' => '',
+	require_once __DIR__ . '/../vendor/autoload.php';
 
-		'wordpress-path' => __DIR__ . '/../wordpress',
-		'domain' => 'wp.localhost',
-		'admin-email' => 'admin@example.org',
-		'blog-title' => 'Tests',
-		'admin-password' => 'admin',
+	$bootstrapper = new Rosio\WordPressTestingHarness\Bootstrapper(array(
+	    'bootstrap-path' => __FILE__,
 
-		'always-reinstall' => false,
+	    'db-name' => 'wp_test',
+	    'db-user' => 'root',
+	    'db-pass' => 'root',
+	    'db-host' => 'localhost',
+	    'db-prefix' => 'wptests_',
+	    'db-charset' => '',
+	    'db-collate' => '',
+	    'wplang' => '',
 
-		'php-binary' => 'php',
-		'testdata-path' => __DIR__ . '/../data',
+	    'wordpress-path' => __DIR__ . '/../wordpress',
+	    'domain' => 'wp.localhost',
+	    'admin-email' => 'admin@example.org',
+	    'blog-title' => 'Tests',
+	    'admin-password' => 'admin',
+
+	    'always-reinstall' => true,
+
+	    'php-binary' => 'php',
+	    'testdata-path' => __DIR__ . '/../data',
 	));
+
+	// Require in plugin
+	require __DIR__ . '/../index.php';
 	```
 
 4. Write your first test!
