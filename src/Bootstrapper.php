@@ -230,18 +230,10 @@ class Bootstrapper
 
 		echo "Installing..." . PHP_EOL;
 
-		foreach ($wpdb->tables() as $table => $prefixed_table)
+		// Drop all tables
+		foreach ($wpdb->get_col($wpdb->prepare("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA='%s'", DB_NAME)) as $table)
 		{
-			$wpdb->query("DROP TABLE IF EXISTS $prefixed_table");
-		}
-
-		foreach ($wpdb->tables('ms_global') as $table => $prefixed_table)
-		{
-			$wpdb->query("DROP TABLE IF EXISTS $prefixed_table");
-
-			// We need to create references to ms global tables.
-			if ($multisite)
-				$wpdb->$table = $prefixed_table;
+			$wpdb->query("DROP TABLE IF EXISTS {$table}");
 		}
 
 		wp_install(WP_TESTS_TITLE, 'admin', WP_TESTS_EMAIL, true, null, $this->adminPassword);
