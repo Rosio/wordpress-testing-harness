@@ -12,6 +12,8 @@ class Bootstrapper
 
 	public function __construct (array $settings = array())
 	{
+		global $argv, $table_prefix;
+
 		$settings = array_merge(array(
 			'bootstrap-path' => null,
 
@@ -86,9 +88,10 @@ class Bootstrapper
 					break;
 				case 'always-reinstall':
 					$this->alwaysReinstall = $value;
+					break;
 
 				case 'db-prefix':
-					$GLOBALS['table_prefix'] = $value;
+					$table_prefix = $value;
 					break;
 
 				case 'admin-password':
@@ -103,18 +106,17 @@ class Bootstrapper
 					throw new \InvalidArgumentException("Argument $name is not a valid setting for the WordPress Bootstrapper.");
 			}
 		}
-
 		require_once __DIR__ . '/functions.php';
 
 		$this->isMultisite = (int) (defined('WP_TESTS_MULTISITE') && WP_TESTS_MULTISITE);
 
 		if (isset($argv[1]) && $argv[1] === 'install')
-			$this->bootstrap();
-		else
 			$this->install();
+		else
+			$this->bootstrap();
 	}
 
-	public function boostrap ()
+	public function bootstrap ()
 	{
 		/*
 		 * Globalize some WordPress variables, because PHPUnit loads this file inside a function
@@ -132,10 +134,17 @@ class Bootstrapper
 		// Install WordPress
 		system(WP_PHP_BINARY . ' ' . escapeshellarg($this->bootstrapLocation) . ' install');
 
-		// Mock PHP Mailer
-		$GLOBALS['phpmailer'] = new MockPHPMailer();
+		// Load WordPress
+		require_once ABSPATH . 'wp-settings.php';
 
-		$GLOBALS['wppf'] = new WPProfiler();
+		// Delete any default posts & related data
+		_delete_all_posts();
+
+		// Mock PHP Mailer
+		require_once ABSPATH . 'wp-includes/class-phpmailer.php';
+		$GLOBALS['phpmailer'] = new \MockPHPMailer();
+
+		$GLOBALS['wppf'] = new \WPProfiler();
 
 		function wppf_start($name) {
 			$GLOBALS['wppf']->start($name);
@@ -156,6 +165,7 @@ class Bootstrapper
 
 	public function install ()
 	{
+		global $table_prefix;
 		error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 
 		define('WP_INSTALLING', true);
@@ -165,12 +175,12 @@ class Bootstrapper
 		if ($this->isMultisite)
 		{
 			echo "Running as multisite..." . PHP_EOL;
-			define( 'MULTISITE', true );
-			define( 'SUBDOMAIN_INSTALL', false );
-			define( 'DOMAIN_CURRENT_SITE', WP_TESTS_DOMAIN );
-			define( 'PATH_CURRENT_SITE', '/' );
-			define( 'SITE_ID_CURRENT_SITE', 1 );
-			define( 'BLOG_ID_CURRENT_SITE', 1 );
+			define('MULTISITE', true);
+			define('SUBDOMAIN_INSTALL', false);
+			define('DOMAIN_CURRENT_SITE', WP_TESTS_DOMAIN);
+			define('PATH_CURRENT_SITE', '/');
+			define('SITE_ID_CURRENT_SITE', 1);
+			define('BLOG_ID_CURRENT_SITE', 1);
 			$GLOBALS['base'] = '/';
 		}
 		else
@@ -193,9 +203,6 @@ class Bootstrapper
 
 		// Load WordPress
 		require_once ABSPATH . 'wp-settings.php';
-
-		// Delete any default posts & related data
-		_delete_all_posts();
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		require_once ABSPATH . 'wp-includes/wp-db.php';
@@ -221,16 +228,16 @@ class Bootstrapper
 			$wpdb->query("DROP TABLE IF EXISTS $prefixed_table");
 		}
 
-		foreach ($wpdb->tables( 'ms_global' ) as $table => $prefixed_table)
+		foreach ($wpdb->tables('ms_global') as $table => $prefixed_table)
 		{
 			$wpdb->query("DROP TABLE IF EXISTS $prefixed_table");
 
 			// We need to create references to ms global tables.
-			if ( $multisite )
+			if ($multisite)
 				$wpdb->$table = $prefixed_table;
 		}
 
-		wp_install(WP_TESTS_TITLE, 'admin', WP_TESTS_EMAIL, true, null, 'admin');
+		wp_install(WP_TESTS_TITLE, 'admin', WP_TESTS_EMAIL, true, null, $this->adminPassword);
 
 		if ($multisite)
 		{
