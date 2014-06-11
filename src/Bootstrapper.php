@@ -9,6 +9,7 @@ class Bootstrapper
 	private $alwaysReinstall = false;
 
 	private $settings;
+	private $events = array();
 
 	public function __construct (array $settings = array())
 	{
@@ -36,6 +37,8 @@ class Bootstrapper
 
 			'php-binary' => 'php',
 			'testdata-path' => __DIR__ . '/../data',
+
+			'after-install' => null,
 
 		), $settings);
 
@@ -100,6 +103,10 @@ class Bootstrapper
 
 				case 'wordpress-path':
 					define('ABSPATH', rtrim($value, '/\\') . '/');
+					break;
+
+				case 'after-install':
+					$this->events['after-install'] = $value;
 					break;
 
 				default:
@@ -253,6 +260,9 @@ class Bootstrapper
 		}
 
 		file_put_contents(WP_TESTS_VERSION_FILE, $hash);
+
+		if ($this->events['after-install'] !== null)
+			$this->events['after-install']();
 	}
 
 	protected function startHeadlessRequest ()
